@@ -20,19 +20,21 @@ import random
 # debugpy.wait_for_client()
 # print('Attached')
 
-driver0 = pd.read_csv("..//clean_nyc_data//driver.csv")
-order = pd.read_csv("..//clean_nyc_data//order.csv")
+driver0 = pd.read_csv("Database//NYC_trip//driver.csv")
+order = pd.read_csv("Database//NYC_trip//order.csv")
 # area = np.load("..//clean_nyc_data//NY_area.npy")
-area = pd.read_csv("..//clean_nyc_data//NY_area_df.csv",index_col=0)
-area.columns =  [int(float(s)) for s in area.columns]
-area.index =  [int(float(s)) for s in area.index]
+area = pd.read_csv("Database//NYC_area//NY_area_df.csv", index_col=0)
+area.columns = [int(float(s)) for s in area.columns]
+area.index = [int(float(s)) for s in area.index]
 
-order['call_time']=pd.to_datetime(order['call_time']); order['end_time']=pd.to_datetime(order['end_time'])
-start_time = pd.to_datetime('2022-06-01 06:00:00 AM'); end_time = pd.to_datetime('2022-06-01 08:00:00 AM')
-order_pick = order[(order['call_time'] > start_time) & (order['call_time'] <= end_time)]
-order_pick = order_pick[['sid','call_time','eid','end_time']]
+order["call_time"] = pd.to_datetime(order["call_time"])
+order["end_time"] = pd.to_datetime(order["end_time"])
+start_time = pd.to_datetime("2022-06-01 06:00:00 AM")
+end_time = pd.to_datetime("2022-06-01 08:00:00 AM")
+order_pick = order[(order["call_time"] > start_time) & (order["call_time"] <= end_time)]
+order_pick = order_pick[["sid", "call_time", "eid", "end_time"]]
 order_pick = order_pick.values
-driver0['time'] = pd.date_range(start=start_time, end=start_time, periods=len(driver0))
+driver0["time"] = pd.date_range(start=start_time, end=start_time, periods=len(driver0))
 print(len(order_pick))
 
 
@@ -40,15 +42,24 @@ start = time.time()
 for Optinterval in [30]:
     for Rollinterval in [5]:
         for Lockedinterval in [10]:
-    #     for driver in [driver_norm]:
-            driver_pick = driver0[['id','time']]
+            #     for driver in [driver_norm]:
+            driver_pick = driver0[["id", "time"]]
             driver_pick = driver_pick.values
-    
-            SMM = MaxMatchOnl(order_pick,driver_pick,area,0,Optinterval,Rollinterval,Lockedinterval,0)
+
+            SMM = MaxMatchOnl(
+                order_pick,
+                driver_pick,
+                area,
+                0,
+                Optinterval,
+                Rollinterval,
+                Lockedinterval,
+                0,
+            )
             print(SMM.twooffMatch())
-        
+
 end = time.time()
-print(end - start)        
+print(end - start)
 """
 k = []
 
