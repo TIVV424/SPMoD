@@ -1,29 +1,33 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Jun  7 21:26:30 2021
+Created on Sun Jan 21 2024
 
-@author: didi
+Author: Ruiting Wang
 """
+
 import networkx as nx
 import random
 import numpy as np
 import pandas as pd
 
 
-class MaxMatchOff(object):
-    def __init__(self, order, driver, area, uncertainty, seed, void):
+class ConstructNetwork(object):
+    def __init__(self, order, driver, area, seed, void):
         self.order = order
         self.driver = driver
         self.area = area
         self.n_order = len(order)
         self.n_driver = len(driver)
         self.n_area = len(area)
-        self.uncertainty = 0
         self.seed = seed
         self.void = void
 
-    def getConnectivity(self, DriverList, OrderList, VoidTime):
+    def getConnectivity(self):
+        VoidTime = pd.Timedelta(self.void, unit="m")
+        OrderList = range(0, self.n_order)
+        DriverList = range(0, self.n_driver)
+
         driver_time = self.driver[:, 1]
         driver_area = self.driver[:, 0]
         order_start_time = self.order[:, 1]
@@ -47,9 +51,6 @@ class MaxMatchOff(object):
                 np.where((order_start_time < max_void_time) & (order_start_time > min_void_time))[0].tolist()
             ) & set(OrderList)
             for j in fil_index:
-                # print(driver_area[i],order_start_area[j])
-                # print(self.area.loc[driver_area[i],order_start_area[j]])
-                # print(pd.Timedelta(self.area.loc[driver_area[i],order_start_area[j]],unit='s'))
                 if (
                     driver_time[i] + pd.Timedelta(self.area.loc[driver_area[i], order_start_area[j]], unit="s")
                     < order_start_time[j]
@@ -116,33 +117,27 @@ class MaxMatchOff(object):
         # plt.show()
         return G
 
-    def offlineMatch(self, DriverList, TripList, VoidTime):
-        G = self.getConnectivity(DriverList, TripList, VoidTime)
-        flowCost, flowDict = nx.network_simplex(G)
-        return -flowCost, flowDict
+    def saveNetwork(self, G, filename):
+        nx.write_gpickle(G, filename)
 
-    def findTripList(self, flowDict):
-        TripList = sorted(
-            [int(u[2:]) for u in flowDict for v in flowDict[u] if flowDict[u][v] > 0 and "to" in u and "td" in v]
-        )
-        return TripList
+    def loadNetwork(self, filename):
+        G = nx.read_gpickle(filename)
+        return G
 
-    def createDriver(self):
-        FDriver = random.sample(range(0, self.n_driver), int(self.uncertainty * self.n_driver))
-        CFDriver = set(range(0, self.n_driver)) - set(FDriver)
-        return CFDriver, FDriver
+    # def network_metrics(self, G):
+    #     deg_centrality = nx.degree_centrality(G) #degree centrality
 
-    def twooffMatch(self):
-        TripList = range(0, self.n_order)
-        CFDriver, FDriver = self.createDriver()
+    #     nx.closeness_centrality(G) #closeness centrality
+    #     nx.betweenness_centrality(G) #betweenness centrality
 
-        VoidTime = pd.Timedelta(self.void, unit="m")
-        OneNum, OneMatch = self.offlineMatch(FDriver, TripList, VoidTime)
+    # betweenness centrality
 
-        VoidTime = pd.Timedelta(self.void, unit="m")
-        UpdateTripList = list(set(TripList) - set(self.findTripList(OneMatch)))
-        # print(len(self.findTripList(OneMatch)))
-        TwoNum, TwoMatch = self.offlineMatch(CFDriver, UpdateTripList, VoidTime)
-
-        TotalNum = OneNum + TwoNum
-        return TotalNum
+    # print(nx.betweenness_centrality(G))
+    # print(nx.edge_betweenness_centrality(G))
+    # print(nx.info(G))
+    # print("Network density:", nx.density(G))
+    # print("Network diameter:", nx.diameter(G))
+    # print("Network average shortest path length:", nx.average_shortest_path_length(G))
+    # print("Network average clustering coefficient:", nx.average_clustering(G))
+    # print("Network average degree connectivity:", nx.average_degree_connectivity(G))
+    # print("Network average degree:", nx.average_degree_connectivity(G))
