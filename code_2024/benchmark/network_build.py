@@ -130,12 +130,12 @@ class ConstructNetwork(object):
         return G
 
     def build_network(self, network_type="order"):
-        driver_con_trip = self.get_d2t_onnectivity()
         trip_con_trip = self.get_t2t_onnectivity()
 
         if network_type == "order":
             G = self.build_order_network(self.order_list, trip_con_trip)
         elif network_type == "full":
+            driver_con_trip = self.get_d2t_onnectivity()
             G = self.build_full_network(self.driver_list, self.order_list, driver_con_trip, trip_con_trip)
         return G
 
@@ -147,11 +147,18 @@ class ConstructNetwork(object):
         return G
 
     def network_metrics(self, G):
+        katz_centrality = nx.katz_centrality(G)  # Katz centrality
         deg_centrality = nx.degree_centrality(G)  # degree centrality
         clo_centrality = nx.closeness_centrality(G)  # closeness centrality
         bet_centrality = nx.betweenness_centrality(G)  # betweenness centrality
-        df = pd.DataFrame.from_dict([deg_centrality, clo_centrality, bet_centrality]).T
-        df.columns = ["degree_centrality", "betweenness_centrality", "closeness_centrality"]
+
+        df = pd.DataFrame.from_dict([deg_centrality, clo_centrality, bet_centrality, katz_centrality]).T
+        df.columns = [
+            "degree_centrality",
+            "betweenness_centrality",
+            "closeness_centrality",
+            "katz_centrality",
+        ]
 
         return df
 
