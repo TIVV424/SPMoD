@@ -147,12 +147,12 @@ class ConstructNetwork(object):
         return G
 
     def network_metrics(self, G):
-        katz_centrality = nx.katz_centrality(G)  # Katz centrality
-        deg_centrality = nx.degree_centrality(G)  # degree centrality
-        clo_centrality = nx.closeness_centrality(G)  # closeness centrality
-        bet_centrality = nx.betweenness_centrality(G)  # betweenness centrality
+        degree = nx.degree(G)  # degree centrality
+        clo_centrality = nx.closeness_centrality(G, normalized=False)  # closeness centrality
+        bet_centrality = nx.betweenness_centrality(G, normalized=False)  # betweenness centrality
+        katz_centrality = nx.katz_centrality(G, normalized=False)  # Katz centrality
 
-        df = pd.DataFrame.from_dict([deg_centrality, clo_centrality, bet_centrality, katz_centrality]).T
+        df = pd.DataFrame.from_dict([degree, clo_centrality, bet_centrality, katz_centrality]).T
         df.columns = [
             "degree_centrality",
             "betweenness_centrality",
@@ -161,6 +161,20 @@ class ConstructNetwork(object):
         ]
 
         return df
+
+    # def single_source_longest_dag_path_length(G, s):
+    #     assert(G.in_degree(s) == 0)
+    #     dist = dict.fromkeys(G.nodes, -float('inf'))
+    #     dist[s] = 0
+    #     topo_order = nx.topological_sort(G)
+    #     for n in topo_order:
+    #         for s in G.successors(n):
+    #             if dist[s] < dist[n] + G.edges[n,s]['weight']:
+    #                 dist[s] = dist[n] + G.edges[n,s]['weight']
+    #     return dist
+
+    def longest_path(self, G):
+        max(nx.all_simple_paths(G, 1, 10), key=lambda x: len(x))
 
     # print(nx.betweenness_centrality(G))
     # print(nx.edge_betweenness_centrality(G))
