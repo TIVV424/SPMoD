@@ -147,14 +147,20 @@ class ConstructNetwork(object):
         return G
 
     def network_metrics(self, G):
-        degree = nx.degree(G)  # degree centrality
-        clo_centrality = nx.closeness_centrality(G, normalized=False)  # closeness centrality
+        degree = nx.degree(G)  # degree
+        in_degree = G.in_degree()  # in-degree
+        out_degree = G.out_degree()  # out-degree
+        clo_centrality = nx.closeness_centrality(G)  # closeness centrality
         bet_centrality = nx.betweenness_centrality(G, normalized=False)  # betweenness centrality
         katz_centrality = nx.katz_centrality(G, normalized=False)  # Katz centrality
 
-        df = pd.DataFrame.from_dict([degree, clo_centrality, bet_centrality, katz_centrality]).T
+        df = pd.DataFrame.from_dict(
+            [dict(degree), dict(in_degree), dict(out_degree), clo_centrality, bet_centrality, katz_centrality]
+        ).T
         df.columns = [
-            "degree_centrality",
+            "degree",
+            "in_degree",
+            "out_degree",
             "betweenness_centrality",
             "closeness_centrality",
             "katz_centrality",

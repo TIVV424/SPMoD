@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Jun  7 21:26:30 2021
+Created on Sun Jan 21 2024
 
-@author: didi
+Author: Ruiting Wang
 """
+
 import networkx as nx
 import random
 import numpy as np
@@ -12,7 +13,7 @@ import pandas as pd
 
 
 class MaxMatchOff(object):
-    def __init__(self, order, driver, area, uncertainty, seed, void):
+    def __init__(self, order, driver, area, uncertainty, seed, void, weight_on="T"):
         self.order = order
         self.driver = driver
         self.area = area
@@ -22,6 +23,10 @@ class MaxMatchOff(object):
         self.uncertainty = 0
         self.seed = seed
         self.void = void
+        self.order_list = range(0, self.n_order)
+        self.order_MTC = self.order[:, 4]
+        self.weight_on = weight_on
+        print("=========== Weighted feature :", self.weight_on, " ===========")
 
     def getConnectivity(self, DriverList, OrderList, VoidTime):
         driver_time = self.driver[:, 1]
@@ -45,13 +50,13 @@ class MaxMatchOff(object):
 
             fil_index = set(
                 np.where((order_start_time < max_void_time) & (order_start_time > min_void_time))[0].tolist()
-            ) & set(OrderList)
+            ) & set(order_list)
             for j in fil_index:
                 # print(driver_area[i],order_start_area[j])
                 # print(self.area.loc[driver_area[i],order_start_area[j]])
                 # print(pd.Timedelta(self.area.loc[driver_area[i],order_start_area[j]],unit='s'))
                 if (
-                    driver_time[i] + pd.Timedelta(self.area.loc[driver_area[i], order_start_area[j]], unit="s")
+                    driver_time[i] + pd.Timedelta(self.area[driver_area[i], order_start_area[j]], unit="s")
                     < order_start_time[j]
                 ):
                     driver_con_trip[i].append(j)
@@ -63,21 +68,23 @@ class MaxMatchOff(object):
 
             fil_index = set(
                 np.where((order_start_time < max_void_time) & (order_start_time > min_void_time))[0].tolist()
-            ) & set(OrderList)
+            ) & set(order_list)
 
             for j in fil_index:
                 if (
-                    order_end_time[i] + pd.Timedelta(self.area.loc[order_end_area[i], order_start_area[j]], unit="s")
+                    order_end_time[i] + pd.Timedelta(self.area[order_end_area[i], order_start_area[j]], unit="s")
                     < order_start_time[j]
                 ):
                     trip_con_trip[i].append(j)
 
-        G = self.buildNetwork(driver_list, order_list, driver_con_trip, trip_con_trip)
+        G = self.buildNetwork(driver_list, driver_con_trip, trip_con_trip)
 
         return G
 
-    def buildNetwork(self, driver_list, order_list, driver_con_trip, trip_con_trip):
+    def buildNetwork(self, driver_list, driver_con_trip, trip_con_trip):
         G = nx.DiGraph()
+        order_list = self.order_list
+        order_MTC = self.order_MTC
         # add supersource and supersink to the network
         n_driver = len(driver_list)
         G.add_node("s", demand=-n_driver)
@@ -99,8 +106,12 @@ class MaxMatchOff(object):
             G.add_edge("td" + str(i), "t", weight=0, capacity=1)
 
         # add trips
-        for i in order_list:
-            G.add_edge("to" + str(i), "td" + str(i), weight=-1, capacity=1)
+        if self.weight_on == True:
+            for i in order_list:
+                G.add_edge("to" + str(i), "td" + str(i), weight=-order_MTC[i], capacity=1)
+        else:
+            for i in order_list:
+                G.add_edge("to" + str(i), "td" + str(i), weight=-1, capacity=1)
 
         # add driver's connectivity to trip
         for i in driver_con_trip:
@@ -116,8 +127,8 @@ class MaxMatchOff(object):
         # plt.show()
         return G
 
-    def offlineMatch(self, DriverList, TripList, VoidTime):
-        G = self.getConnectivity(DriverList, TripList, VoidTime)
+    def offlineMatch(self, DriverList, OrderList, VoidTime):
+        G = self.getConnectivity(DriverList, OrderList, VoidTime)
         flowCost, flowDict = nx.network_simplex(G)
         return -flowCost, flowDict
 
@@ -133,16 +144,27 @@ class MaxMatchOff(object):
         return CFDriver, FDriver
 
     def twooffMatch(self):
-        TripList = range(0, self.n_order)
         CFDriver, FDriver = self.createDriver()
 
         VoidTime = pd.Timedelta(self.void, unit="m")
-        OneNum, OneMatch = self.offlineMatch(FDriver, TripList, VoidTime)
+        OneNum, OneMatch = self.offlineMatch(FDriver, self.order_list, VoidTime)
 
         VoidTime = pd.Timedelta(self.void, unit="m")
-        UpdateTripList = list(set(TripList) - set(self.findTripList(OneMatch)))
+        UpdateTripList = list(set(self.order_list) - set(self.findTripList(OneMatch)))
         # print(len(self.findTripList(OneMatch)))
         TwoNum, TwoMatch = self.offlineMatch(CFDriver, UpdateTripList, VoidTime)
 
-        TotalNum = OneNum + TwoNum
+        if self.weight_on == "T":
+            cnt = 0
+            for key in TwoMatch.keys():
+                path = TwoMatch[key]
+                if (len(path) == 1) & (sum(path.values()) == 1) & key.startswith("to"):
+                    cnt += 1
+
+            TotalNum = cnt
+        else:
+            TotalNum = OneNum + TwoNum
+            print(OneNum, TwoNum)
+
+        np.save("Database//offline_result//two_match_weight_%s.npy" % str(self.weight_on), TwoMatch)
         return TotalNum
