@@ -16,7 +16,18 @@ from time import time
 
 class MaxMatchOnl(object):
     def __init__(
-        self, order, driver, area, uncertainty, opt_interval, roll_interval, locked_interval, seed, void, weight_on=True
+        self,
+        dirname,
+        order,
+        driver,
+        area,
+        uncertainty,
+        opt_interval,
+        roll_interval,
+        locked_interval,
+        seed,
+        void,
+        weight_on="T",
     ):
         """
         Parameters
@@ -34,6 +45,7 @@ class MaxMatchOnl(object):
         ------------
 
         """
+        self.dirname = dirname
         self.order = order
         self.driver = driver
         self.area = area
@@ -64,22 +76,7 @@ class MaxMatchOnl(object):
 
         time1 = time()
 
-        for i in range(len(driver_list)):
-            # TODO: update this to use numpy indexing
-            """
-            driver_con_trip.append(
-                set(
-                    np.where(
-                        order_start_time
-                        - driver_time[i]
-                        - void_time
-                        > self.area[driver_area[i], :]
-                    )
-                )
-                & set(order_list)
-            )
-
-            """
+        for i in range(self.n_driver):
             driver_con_trip[i] = []
             max_void_time = driver_time[i] + void_time
             min_void_time = driver_time[i]
@@ -100,8 +97,7 @@ class MaxMatchOnl(object):
 
         time1 = time()
 
-        for i in range(len(order_end_area)):
-            # TODO: update this to use numpy indexing
+        for i in range(self.n_order):
             trip_con_trip[i] = []
             max_void_time = order_end_time[i] + void_time
             min_void_time = order_end_time[i]
@@ -150,7 +146,7 @@ class MaxMatchOnl(object):
             G.add_edge("td" + str(i), "k", weight=0, capacity=1)
 
         # add trips
-        if self.weight_on == True:
+        if self.weight_on == "T":
             for i in order_list:
                 G.add_edge("to" + str(i), "td" + str(i), weight=-order_MTC[i], capacity=1)
         else:
@@ -176,8 +172,10 @@ class MaxMatchOnl(object):
     def offlineMatch(self, DriverList, TripList, void_time):
         time1 = time()
         G = self.getConnectivity(DriverList, TripList, void_time)
+
         time_getConnectivity = time() - time1
         flowCost, flowDict = nx.network_simplex(G)
+
         time_simplex = time() - time1 - time_getConnectivity
         print("time_get_connectivity", time_getConnectivity)
         print("time_simplex", time_simplex)
@@ -244,7 +242,11 @@ class MaxMatchOnl(object):
             interval_locked = i + pd.Timedelta(self.locked_interval, unit="m")
             interval_roll = i + pd.Timedelta(self.roll_interval, unit="m")
 
-            print(interval_start, interval_end, interval_locked, interval_roll)
+            fr_time = pd.to_datetime(interval_start).strftime("%H%M%S")
+            to_time = pd.to_datetime(interval_end).strftime("%H%M%S")
+            lto_time = pd.to_datetime(interval_locked).strftime("%H%M%S")
+
+            print("Optimization horizon: ", fr_time, " to ", to_time, ". Result applied till: ", lto_time)
 
             driverList = np.where(self.driver[:, 1] <= interval_end)[0].tolist()
             tripList = np.where((self.order[:, 1] <= interval_end) & (self.order[:, 1] > interval_start))[0].tolist()
@@ -252,7 +254,7 @@ class MaxMatchOnl(object):
             AllDriver_i = list(set(driverList) & set(CFDriver))
             Trip_i = list(set(tripList) & set(Trip))
 
-            void_time = pd.Timedelta(20, unit="m")
+            void_time = pd.Timedelta(self.void, unit="m")
             OneNum, OneMatch = self.offlineMatch(AllDriver_i, Trip_i, void_time)
 
             if self.weight_on == "T":
@@ -262,13 +264,13 @@ class MaxMatchOnl(object):
                     if (len(path) == 1) & (sum(path.values()) == 1) & key.startswith("to"):
                         cnt += 1
 
-                TotalNum = cnt
+                OneNum_match = cnt
             else:
-                TotalNum = OneNum
+                OneNum_match = OneNum
 
             print("Total Driver Num", len(AllDriver_i))
             print("Total Order Num", len(Trip_i))
-            print("Order matched", TotalNum)
+            print("Order matched", OneNum_match)
 
             tripListOpt = np.where((self.order[:, 1] <= interval_locked) & (self.order[:, 1] > interval_start))[
                 0
@@ -281,6 +283,18 @@ class MaxMatchOnl(object):
             print("Order matched in Batch", RealOneNum)
 
             IntervalNum = RealOneNum
+
+            filename = "match_reopt_%s_%s_%s_from_%s_to_%s_lto_%s_weight_%s.npy" % (
+                self.opt_interval,
+                self.roll_interval,
+                self.locked_interval,
+                fr_time,
+                to_time,
+                lto_time,
+                str(self.weight_on),
+            )
+
+            np.save("Database\online_result\%s\%s" % (self.dirname, filename), OneMatch)
 
             self.updateDriver(AllDriver_i, OneMatch, interval_locked, interval_roll)
 

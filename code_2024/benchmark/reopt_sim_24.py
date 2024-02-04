@@ -10,20 +10,30 @@ from reopt_24 import MaxMatchOnl
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-
+import os
 import time
+import sys
+
+orig_stdout = sys.stdout
 
 
-driver = pd.read_csv("Database//NYC_trip//driver_260_2000.csv", index_col=0)
-order = pd.read_csv("Database//NYC_trip//order_clean_260.csv", index_col=0)
-area = np.load("Database//NYC_area//NY_area.npy")
-df_MTC = pd.read_csv("Database//network8_10//network_metrics_MTC.csv", index_col=0)
+driver = pd.read_csv("Database\NYC_trip\driver_260_2000.csv", index_col=0)
+order = pd.read_csv("Database\NYC_trip\order_clean_260.csv", index_col=0)
+area = np.load("Database\NYC_area\NY_area.npy")
+df_MTC = pd.read_csv("Database\network8_10\network_metrics_MTC.csv", index_col=0)
 df_MTC = df_MTC[df_MTC["time"] == "8-10am"]
 df_MTC.reset_index(drop=True, inplace=True)
 
+
 seed = 0
-void = 20
-weight_on = True
+void = 30
+weight_on = "T"
+timestr = time.strftime("%Y%m%d-%H%M%S")
+if not os.path.exists(os.path.join("Database\online_result", timestr)):
+    os.makedirs(os.path.join("Database\online_result", timestr))
+
+f = open("Database\online_result\%s\log.txt" % (timestr), "w")
+sys.stdout = f
 
 order["call_time"] = pd.to_datetime(order["call_time"])
 order["end_time"] = pd.to_datetime(order["end_time"])
@@ -41,58 +51,60 @@ print(order_pick.shape)
 print("Number of orders between 8-10 am,", len(order_pick))
 
 
-driver_pick = pd.read_csv("Database//NYC_trip//driver_with_time.csv")
+driver_pick = pd.read_csv("Database\NYC_trip\driver_with_time.csv")
 driver_pick["time"] = pd.to_datetime(driver_pick["time"])
 print("Number of drivers between 8-10 am,", len(driver_pick))
 driver_pick = driver_pick.values
 
+para_df = pd.read_csv('experiments\para_log.csv')
+
 match_result = []
 time_spent = []
-opt_int_list = []
-roll_int_list = []
-lock_int_list = []
-weight_on_list = []
 
-for opt_interval in [30]:
-    for roll_interval in [5]:
-        for locked_interval in [10]:
-            for weight_on in [True]:
-                start = time.time()
-                SMM = MaxMatchOnl(
-                    order_pick,
-                    driver_pick,
-                    area,
-                    0,
-                    opt_interval,
-                    roll_interval,
-                    locked_interval,
-                    seed=seed,
-                    void=void,
-                    weight_on=weight_on,
-                )
-                match_temp = SMM.twooffMatch()
-                end = time.time()
-                match_result.append(match_temp)
-                time_spent.append(end - start)
-                opt_int_list.append(opt_interval)
-                roll_int_list.append(roll_interval)
-                lock_int_list.append(locked_interval)
-                weight_on_list.append(weight_on)
-                print(match_temp)
-                print(" =============== Running time ============== \n", end - start)
+for i in range(len(para_df)):
+    opt_interval = para_df['opt'][i]
+    roll_interval = para_df['roll'][i]
+    locked_interval = para_df['locked'][i]
+    weight_on = para_df['weight'][i]
+    start = time.time()
+    SMM = MaxMatchOnl(
+        timestr,
+        order_pick,
+        driver_pick,
+        area,
+        0,
+        opt_interval,
+        roll_interval,
+        locked_interval,
+        seed=seed,
+        void=void,
+        weight_on=weight_on,
+    )
+    match_temp = SMM.twooffMatch()
+    end = time.time()
+    match_result.append(match_temp)
+    time_spent.append(end - start)
+    print(" =============== Running time ============== \n", end - start)
+    print(" =============== Match results ============== \n")
+    print("Total orders:", len(order_pick))
+    print("Total drivers:", len(driver_pick))
+    print("Total matches:", match_temp)
+    print(" ============================================= \n")
 
 
 pd.DataFrame(
     {
         "match_result": match_result,
         "time": time_spent,
-        "weight": weight_on_list,
-        "opt_int": opt_int_list,
-        "roll_int": roll_int_list,
-        "lock_int": lock_int_list,
+        "weight": para_df['weight'].tolist(),
+        "opt_int": para_df['opt'].tolist(),
+        "roll_int": para_df['roll'].tolist(),
+        "locked_int": para_df['locked'].tolist(),
     }
-).to_csv("Database\offline_result\match_result_mpc.csv")
+).to_csv("Database\online_result\%s\match_result_mpc.csv" % (timestr))
 
+sys.stdout = orig_stdout
+f.close()
 
 """
 k = []
