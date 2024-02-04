@@ -31,8 +31,8 @@ timestr = time.strftime("%Y%m%d-%H%M%S")
 if not os.path.exists(os.path.join("Database//online_result", timestr)):
     os.makedirs(os.path.join("Database//online_result", timestr))
 
-# f = open("Database//online_result//%s//log.txt" % (timestr), "w")
-# sys.stdout = f
+f = open("Database//online_result//%s//log.txt" % (timestr), "w")
+sys.stdout = f
 
 order["call_time"] = pd.to_datetime(order["call_time"])
 order["end_time"] = pd.to_datetime(order["end_time"])
@@ -47,12 +47,12 @@ assert order_pick.isna().sum().sum() == 0
 ## Change this to 1000 for testing
 order_pick = order_pick.values[:1000]
 print(order_pick.shape)
-# print("Number of orders between 8-10 am,", len(order_pick))
+print("Number of orders between 8-10 am,", len(order_pick))
 
 
 driver_pick = pd.read_csv("Database//NYC_trip//driver_with_time.csv")
 driver_pick["time"] = pd.to_datetime(driver_pick["time"])
-# print("Number of drivers between 8-10 am,", len(driver_pick))
+print("Number of drivers between 8-10 am,", len(driver_pick))
 driver_pick = driver_pick.values
 
 para_df = pd.read_csv("experiments//para_log.csv")
@@ -101,6 +101,7 @@ match_temp, time_temp = temp_out[0]
 match_result.append(match_temp)
 time_spent.append(time_temp)
 
+print(" =============== Running time ============== \n", time_temp)
 
 pd.DataFrame(
     {
@@ -112,3 +113,5 @@ pd.DataFrame(
         "locked_int": para_df["locked"].tolist(),
     }
 ).to_csv("Database//online_result//%s//match_result_mpc.csv" % (timestr))
+
+f.close()
