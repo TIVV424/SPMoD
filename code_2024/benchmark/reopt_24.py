@@ -163,7 +163,7 @@ class MaxMatchOnl(object):
         # nx.draw(G, with_labels=True)
         # plt.savefig("test_rasterization.png", dpi=150)
         # plt.show()
-        nx.write_gexf(G, "30.gexf")
+        # nx.write_gexf(G, "30.gexf")
         return G
 
     def offlineMatch(self, DriverList, TripList, void_time):
@@ -210,22 +210,14 @@ class MaxMatchOnl(object):
                 self.driver[i, 1] = RollEndTime
             else:
                 continue
-                """
-                LeftTime = int((BatchEndTime - self.driver[i,1])/pd.Timedelta(1,unit='m'))
-                # find possible area
-                MoveArea = np.where(self.area[self.order[TripzID,2],:] < LeftTime)[0].tolist()
-                try:
-                    PickArea = random.sample(MoveArea,1)
-                    self.driver[i,1] = self.driver[i,1]+pd.Timedelta(self.area[int(self.driver[i,0]),PickArea[0]],unit='s')
-                    self.driver[i,0] = PickArea[0]
-                except:
-                    continue
-                """
 
-        return True
+        return 0
+
+    def updateOrder(self, all_trips_waiting, matched_trips_batch_i):
+        return set(all_trips_waiting) - set(matched_trips_batch_i)
 
     def twooffMatch(self):
-        Trip = range(0, self.n_order)
+        all_trips_waiting = list(range(0, self.n_order))
         CFDriver = self.createDriver()
         TotalNum = 0
 
@@ -239,7 +231,7 @@ class MaxMatchOnl(object):
             str(self.weight_on),
         )
 
-        f = open("Database\online_result\%s\%s" % (self.dirname, filename_txt), "w")
+        f = open("Database//online_result//%s//%s" % (self.dirname, filename_txt), "w")
 
         for i in pd.date_range(start=start_time, end=end_time, freq=str(self.roll_interval) + "min"):
             # print(np.max(self.driver[:,0]))
@@ -268,11 +260,11 @@ class MaxMatchOnl(object):
             driverList = np.where(self.driver[:, 1] <= interval_end)[0].tolist()
             tripList = np.where((self.order[:, 1] <= interval_end) & (self.order[:, 1] > interval_start))[0].tolist()
 
-            AllDriver_i = list(set(driverList) & set(CFDriver))
-            Trip_i = list(set(tripList) & set(Trip))
+            available_driver_batch_i = list(set(driverList) & set(CFDriver))
+            trip_batch_i = list(set(tripList) & set(all_trips_waiting))
 
             void_time = pd.Timedelta(self.void, unit="m")
-            OneNum, OneMatch = self.offlineMatch(AllDriver_i, Trip_i, void_time)
+            OneNum, OneMatch = self.offlineMatch(available_driver_batch_i, trip_batch_i, void_time)
 
             if self.weight_on == "T":
                 cnt = 0
@@ -285,25 +277,26 @@ class MaxMatchOnl(object):
             else:
                 OneNum_match = OneNum
 
-            print("Total Driver Num", len(AllDriver_i), file=f)
-            print("Total Order Num", len(Trip_i), file=f)
+            print("Total Driver Num", len(available_driver_batch_i), file=f)
+            print("Total Order Num", len(trip_batch_i), file=f)
             print("Order matched", OneNum_match, file=f)
 
-            tripListOpt = np.where((self.order[:, 1] <= interval_locked) & (self.order[:, 1] > interval_start))[
-                0
-            ].tolist()
-            Trip_i_Opt = list(set(tripListOpt) & set(Trip))
-            OneTripList = list(set(self.findTripList(OneMatch)) & set(Trip_i_Opt))
-            RealOneNum = len(OneTripList)
+            trip_in_locked_interval = np.where(
+                (self.order[:, 1] <= interval_locked) & (self.order[:, 1] > interval_start)
+            )[0].tolist()
+            exist_trip_in_locked_interval = list(set(trip_in_locked_interval) & set(all_trips_waiting))
+            matched_trips_batch_i = list(set(self.findTripList(OneMatch)) & set(exist_trip_in_locked_interval))
+            num_of_matched_trips = len(matched_trips_batch_i)
 
-            print("Order in Batch", len(Trip_i_Opt), file=f)
-            print("Order matched in Batch", RealOneNum, file=f)
+            print("Order in Batch", len(exist_trip_in_locked_interval), file=f)
+            print("Order matched in Batch", num_of_matched_trips, file=f)
 
-            IntervalNum = RealOneNum
+            IntervalNum = num_of_matched_trips
 
-            np.save("Database\online_result\%s\%s" % (self.dirname, filename_npy), OneMatch)
+            np.save("Database//online_result//%s//%s" % (self.dirname, filename_npy), OneMatch)
 
-            self.updateDriver(AllDriver_i, OneMatch, interval_locked, interval_roll)
+            self.updateDriver(available_driver_batch_i, OneMatch, interval_locked, interval_roll)
+            all_trips_waiting = self.updateOrder(all_trips_waiting, matched_trips_batch_i)
 
             TotalNum = TotalNum + IntervalNum
             print("Total matched order so far", TotalNum, file=f)

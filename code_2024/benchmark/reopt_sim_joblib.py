@@ -23,7 +23,6 @@ df_MTC = pd.read_csv("Database//network8_10//network_metrics_MTC.csv", index_col
 df_MTC = df_MTC[df_MTC["time"] == "8-10am"]
 df_MTC.reset_index(drop=True, inplace=True)
 
-
 seed = 0
 void = 30
 weight_on = "T"
@@ -56,9 +55,6 @@ print("Number of drivers between 8-10 am,", len(driver_pick))
 driver_pick = driver_pick.values
 
 para_df = pd.read_csv("experiments//para_log.csv")
-
-match_result = []
-time_spent = []
 
 
 def run_online_match(ind):
@@ -96,12 +92,8 @@ temp_out = Parallel(n_jobs=int(cpu_count() - 1), prefer="processes")(
     delayed(run_online_match)(ind=i) for i in range(len(para_df))
 )
 
-match_temp, time_temp = temp_out[0]
-
-match_result.append(match_temp)
-time_spent.append(time_temp)
-
-print(" =============== Running time ============== \n", time_temp)
+match_result = [i[0] for i in temp_out]
+time_spent = [i[1] for i in temp_out]
 
 pd.DataFrame(
     {
