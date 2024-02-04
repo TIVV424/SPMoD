@@ -44,7 +44,7 @@ order_pick["MTC"] = df_MTC["MTC"]
 assert len(order_pick) == len(df_MTC)
 assert order_pick.isna().sum().sum() == 0
 ## Change this to 1000 for testing
-order_pick = order_pick.values[:1000]
+order_pick = order_pick.values
 print(order_pick.shape)
 print("Number of orders between 8-10 am,", len(order_pick))
 
@@ -54,7 +54,7 @@ driver_pick["time"] = pd.to_datetime(driver_pick["time"])
 print("Number of drivers between 8-10 am,", len(driver_pick))
 driver_pick = driver_pick.values
 
-para_df = pd.read_csv("experiments//para_log.csv")
+para_df = pd.read_csv("experiments//para_log1.csv")
 
 
 def run_online_match(ind):
