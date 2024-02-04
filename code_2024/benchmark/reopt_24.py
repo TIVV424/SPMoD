@@ -61,7 +61,6 @@ class MaxMatchOnl(object):
         self.order_list = range(0, self.n_order)
         self.order_MTC = self.order[:, 4]
         self.weight_on = weight_on
-        print("=========== Weighted feature :", self.weight_on, " ===========")
 
     def getConnectivity(self, driver_list, order_list, void_time):
         driver_time = self.driver[:, 1]
@@ -74,7 +73,7 @@ class MaxMatchOnl(object):
         driver_con_trip = {}
         trip_con_trip = {}
 
-        time1 = time()
+        # time1 = time()
 
         for i in range(self.n_driver):
             driver_con_trip[i] = []
@@ -85,17 +84,15 @@ class MaxMatchOnl(object):
                 np.where((order_start_time < max_void_time) & (order_start_time > min_void_time))[0].tolist()
             ) & set(order_list)
             for j in fil_index:
-                # print(driver_area[i],order_start_area[j])
-                # print(self.area[driver_area[i],order_start_area[j]])
                 if (
                     driver_time[i] + pd.Timedelta(self.area[driver_area[i], order_start_area[j]], unit="s")
                     < order_start_time[j]
                 ):
                     driver_con_trip[i].append(j)
 
-        print("time_cal_driver_con_trip", time() - time1)
+        # print("time_cal_driver_con_trip", time() - time1)
 
-        time1 = time()
+        # time1 = time()
 
         for i in range(self.n_order):
             trip_con_trip[i] = []
@@ -112,11 +109,11 @@ class MaxMatchOnl(object):
                     < order_start_time[j]
                 ):
                     trip_con_trip[i].append(j)
-        print("time_cal_trip_con_trip", time() - time1)
+        # print("time_cal_trip_con_trip", time() - time1)
 
-        time1 = time()
+        # time1 = time()
         G = self.buildNetwork(driver_list, order_list, driver_con_trip, trip_con_trip)
-        print("time_build_network", time() - time1)
+        # print("time_build_network", time() - time1)
 
         return G
 
@@ -170,15 +167,15 @@ class MaxMatchOnl(object):
         return G
 
     def offlineMatch(self, DriverList, TripList, void_time):
-        time1 = time()
+        # time1 = time()
         G = self.getConnectivity(DriverList, TripList, void_time)
 
-        time_getConnectivity = time() - time1
+        # time_getConnectivity = time() - time1
         flowCost, flowDict = nx.network_simplex(G)
 
-        time_simplex = time() - time1 - time_getConnectivity
-        print("time_get_connectivity", time_getConnectivity)
-        print("time_simplex", time_simplex)
+        # time_simplex = time() - time1 - time_getConnectivity
+        # print("time_get_connectivity", time_getConnectivity)
+        # print("time_simplex", time_simplex)
         return -flowCost, flowDict
 
     def findTripList(self, flowDict):
@@ -234,6 +231,16 @@ class MaxMatchOnl(object):
 
         start_time = min(self.order[:, 1])
         end_time = max(self.order[:, 1])
+
+        filename_txt = "match_reopt_%s_%s_%s_weight_%s.txt" % (
+            self.opt_interval,
+            self.roll_interval,
+            self.locked_interval,
+            str(self.weight_on),
+        )
+
+        f = open("Database\online_result\%s\%s" % (self.dirname, filename_txt), "w")
+
         for i in pd.date_range(start=start_time, end=end_time, freq=str(self.roll_interval) + "min"):
             # print(np.max(self.driver[:,0]))
 
@@ -246,7 +253,17 @@ class MaxMatchOnl(object):
             to_time = pd.to_datetime(interval_end).strftime("%H%M%S")
             lto_time = pd.to_datetime(interval_locked).strftime("%H%M%S")
 
-            print("Optimization horizon: ", fr_time, " to ", to_time, ". Result applied till: ", lto_time)
+            filename_npy = "match_reopt_%s_%s_%s_from_%s_to_%s_lto_%s_weight_%s.npy" % (
+                self.opt_interval,
+                self.roll_interval,
+                self.locked_interval,
+                fr_time,
+                to_time,
+                lto_time,
+                str(self.weight_on),
+            )
+
+            print("Optimization horizon: ", fr_time, " to ", to_time, ". Result applied till: ", lto_time, file=f)
 
             driverList = np.where(self.driver[:, 1] <= interval_end)[0].tolist()
             tripList = np.where((self.order[:, 1] <= interval_end) & (self.order[:, 1] > interval_start))[0].tolist()
@@ -268,9 +285,9 @@ class MaxMatchOnl(object):
             else:
                 OneNum_match = OneNum
 
-            print("Total Driver Num", len(AllDriver_i))
-            print("Total Order Num", len(Trip_i))
-            print("Order matched", OneNum_match)
+            print("Total Driver Num", len(AllDriver_i), file=f)
+            print("Total Order Num", len(Trip_i), file=f)
+            print("Order matched", OneNum_match, file=f)
 
             tripListOpt = np.where((self.order[:, 1] <= interval_locked) & (self.order[:, 1] > interval_start))[
                 0
@@ -279,25 +296,18 @@ class MaxMatchOnl(object):
             OneTripList = list(set(self.findTripList(OneMatch)) & set(Trip_i_Opt))
             RealOneNum = len(OneTripList)
 
-            print("Order in Batch", len(Trip_i_Opt))
-            print("Order matched in Batch", RealOneNum)
+            print("Order in Batch", len(Trip_i_Opt), file=f)
+            print("Order matched in Batch", RealOneNum, file=f)
 
             IntervalNum = RealOneNum
 
-            filename = "match_reopt_%s_%s_%s_from_%s_to_%s_lto_%s_weight_%s.npy" % (
-                self.opt_interval,
-                self.roll_interval,
-                self.locked_interval,
-                fr_time,
-                to_time,
-                lto_time,
-                str(self.weight_on),
-            )
-
-            np.save("Database\online_result\%s\%s" % (self.dirname, filename), OneMatch)
+            np.save("Database\online_result\%s\%s" % (self.dirname, filename_npy), OneMatch)
 
             self.updateDriver(AllDriver_i, OneMatch, interval_locked, interval_roll)
 
             TotalNum = TotalNum + IntervalNum
+            print("Total matched order so far", TotalNum, file=f)
+
+        f.close()
 
         return TotalNum
