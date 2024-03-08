@@ -1,3 +1,5 @@
+import networkx as nx
+
 def single_sink_longest_dag_path(graph, s):
     '''
     compute the longest path from s to the sink node in a directed acyclic graph

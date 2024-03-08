@@ -12,18 +12,40 @@ import pandas as pd
 
 
 class ConstructNetwork(object):
-    def __init__(self, order, driver, area, void):
+    '''
+    construct order network or full network
+    
+    '''
+    def __init__(self, order, area, void, driver = None):
+        '''
+        Input
+        ---------
+        order: (np.array) the order data, four columns: start_area, start_time, end_area, end_time
+        area: (np.array) the travel time between areas
+        void: (int) the maximum driver void time between two trips
+        driver: (np.array) the driver data, two columns: area, time; 
+            for order network only, no drivers' info is needed
+        '''
         self.order = order
         self.driver = driver
         self.area = area
         self.n_order = len(order)
-        self.n_driver = len(driver)
         self.order_list = range(0, self.n_order)
-        self.driver_list = range(0, self.n_driver)
+        if driver is not None:
+            self.n_driver = len(driver)
+            self.driver_list = range(0, self.n_driver)
         self.n_area = len(area)
         self.void = pd.Timedelta(void, unit="m")
 
     def get_t2t_onnectivity(self):
+        '''
+        get trip to trip connectivity 
+
+        Return
+        ---------
+        trip_con_trip: (dict) the connectivity between trips, key is the trip number, value is the list of following trip numbers that can connect to it
+        
+        '''
         order_start_time = self.order[:, 1]
         order_start_area = self.order[:, 0]
         order_end_time = self.order[:, 3]
@@ -50,6 +72,14 @@ class ConstructNetwork(object):
         return trip_con_trip
 
     def get_d2t_onnectivity(self):
+        '''
+        get driver to trip connectivity
+
+        Return
+        ---------
+        driver_con_trip: (dict) the connectivity between drivers and trips, key is the driver number, value is the list of trip numbers that can connect to it
+
+        '''
         driver_time = self.driver[:, 1]
         driver_area = self.driver[:, 0]
         order_start_time = self.order[:, 1]
@@ -95,8 +125,8 @@ class ConstructNetwork(object):
         a_con_b[j] = [i1, i2, ...] means trip a[i1], a[i2], ... can connect to trip b[j]
 
         """
-        a_start_time = a[:, 1]
-        a_start_area = a[:, 0]
+        # a_start_time = a[:, 1]
+        # a_start_area = a[:, 0]
         a_end_time = a[:, 3]
         a_end_area = a[:, 2]
 
@@ -124,6 +154,23 @@ class ConstructNetwork(object):
         return a_con_b
 
     def build_full_network(self, driver_list, order_list, driver_con_trip, trip_con_trip):
+        '''
+        build the full network with drivers and trips (Acativity on Edge Network Flow Network)
+
+
+        Input
+        ---------
+        driver_list: (list) the list of drivers
+        order_list: (list) the list of trips
+        driver_con_trip: (dict) the connectivity between drivers and trips, key is the driver number, value is the list of trip numbers that can connect to it
+        trip_con_trip: (dict) the connectivity between trips, key is the trip number, value is the list of following trip numbers that can connect to it
+
+        Return
+        ---------
+        G: (networkx.DiGraph) the full network flow network
+
+        '''
+
         G = nx.DiGraph()
         # add supersource and supersink to the network
         n_driver = len(driver_list)
@@ -162,6 +209,19 @@ class ConstructNetwork(object):
         return G
 
     def build_order_network(self, order_list, trip_con_trip):
+        '''
+        build the order network based on order connectivity
+
+        Input
+        ---------
+        order_list: (list) the list of trips
+        trip_con_trip: (dict) the connectivity between trips, key is the trip number, value is the list of following trip numbers that can connect to it
+
+        Return
+        ---------
+        G: (networkx.DiGraph) the order network
+
+        '''
         G = nx.DiGraph()
 
         for i in order_list:
@@ -175,6 +235,18 @@ class ConstructNetwork(object):
         return G
 
     def build_network(self, network_type="order"):
+        '''
+        build the network based on the network type
+
+        Input
+        ---------
+        network_type: (str) the network type, "order" or "full"
+
+        Return
+        ---------
+        G: (networkx.DiGraph) the network
+        '''
+
         trip_con_trip = self.get_t2t_onnectivity()
 
         if network_type == "order":
@@ -230,16 +302,6 @@ class ConstructNetwork(object):
 
         return df
 
-    # def single_source_longest_dag_path_length(G, s):
-    #     assert(G.in_degree(s) == 0)
-    #     dist = dict.fromkeys(G.nodes, -float('inf'))
-    #     dist[s] = 0
-    #     topo_order = nx.topological_sort(G)
-    #     for n in topo_order:
-    #         for s in G.successors(n):
-    #             if dist[s] < dist[n] + G.edges[n,s]['weight']:
-    #                 dist[s] = dist[n] + G.edges[n,s]['weight']
-    #     return dist
 
     def naive_longest_path(self, G, node_list):
         """
