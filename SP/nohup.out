@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "/home/ruiting/research/NetworkFlow/Network-Science-Aided-Online-Dispatch/SP/run_SP.py", line 4, in <module>
+    import matplotlib.pyplot as plt
+ModuleNotFoundError: No module named 'matplotlib'
+Traceback (most recent call last):
+  File "/home/ruiting/research/NetworkFlow/Network-Science-Aided-Online-Dispatch/SP/run_SP.py", line 65, in <module>
+    SP_all = single_sink_longest_dag_path(G_order, "sink")
+  File "/home/ruiting/research/NetworkFlow/Network-Science-Aided-Online-Dispatch/SP/longest_path.py", line 8, in single_sink_longest_dag_path
+    topo_order = list(reversed(list(nx.topological_sort(graph))))
+NameError: name 'nx' is not defined. Did you mean: 'n'?
+Traceback (most recent call last):
+  File "/home/ruiting/research/NetworkFlow/Network-Science-Aided-Online-Dispatch/SP/run_SP.py", line 65, in <module>
+    net = ConstructNetwork(order_pick_current.values, area, 10)
+  File "/home/ruiting/research/NetworkFlow/Network-Science-Aided-Online-Dispatch/SP/network_build.py", line 33, in __init__
+    self.n_driver = len(driver)
+TypeError: object of type 'NoneType' has no len()
+Traceback (most recent call last):
+  File "/home/ruiting/research/NetworkFlow/Network-Science-Aided-Online-Dispatch/SP/run_SP.py", line 99, in <module>
+    SP["t" + str(pointer_a)] = MTC["t" + str(pointer_a)]
+KeyError: 't2276'
