@@ -106,7 +106,7 @@ class MaxMatchOff(object):
             G.add_edge("td" + str(i), "t", weight=0, capacity=1)
 
         # add trips
-        if self.weight_on == True:
+        if self.weight_on == "T":
             for i in order_list:
                 G.add_edge("to" + str(i), "td" + str(i), weight=-order_MTC[i], capacity=1)
         else:

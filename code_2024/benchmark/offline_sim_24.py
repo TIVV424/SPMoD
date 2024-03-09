@@ -25,7 +25,7 @@ df_MTC.reset_index(drop=True, inplace=True)
 
 seed = 0
 void = 30
-weight_on = "T"
+weight_on = "F"
 
 order["call_time"] = pd.to_datetime(order["call_time"])
 order["end_time"] = pd.to_datetime(order["end_time"])
@@ -59,8 +59,8 @@ match_result = SMM.twooffMatch()
 end_time = time()
 print(" =============== Running time ============== \n", end_time - start_time)
 print(match_result)
-np.save("Database\offline_result\match_result_weight_%s.npy" % str(weight_on), match_result)
+np.save("Database//offline_result//match_result_weight_%s.npy" % str(weight_on), match_result)
 
 pd.DataFrame({"match_result": match_result, "time": end_time - start_time, "weight": weight_on}, index=[0]).to_csv(
-    "Database\offline_result\match_result_weight_%s.csv" % str(weight_on)
+    "Database//offline_result//match_result_weight_%s.csv" % str(weight_on)
 )
