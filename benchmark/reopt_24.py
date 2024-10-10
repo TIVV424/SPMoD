@@ -6,12 +6,13 @@ Created on Sun Jan 21 2024
 Author: Ruiting Wang
 """
 
-import networkx as nx
 import random
+from time import time
+
+import matplotlib.pyplot as plt
+import networkx as nx
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from time import time
 
 
 class MaxMatchOnl(object):
@@ -80,14 +81,9 @@ class MaxMatchOnl(object):
             max_void_time = driver_time[i] + void_time
             min_void_time = driver_time[i]
 
-            fil_index = set(
-                np.where((order_start_time < max_void_time) & (order_start_time > min_void_time))[0].tolist()
-            ) & set(order_list)
+            fil_index = set(np.where((order_start_time < max_void_time) & (order_start_time > min_void_time))[0].tolist()) & set(order_list)
             for j in fil_index:
-                if (
-                    driver_time[i] + pd.Timedelta(self.area[driver_area[i], order_start_area[j]], unit="s")
-                    < order_start_time[j]
-                ):
+                if driver_time[i] + pd.Timedelta(self.area[driver_area[i], order_start_area[j]], unit="s") < order_start_time[j]:
                     driver_con_trip[i].append(j)
 
         # print("time_cal_driver_con_trip", time() - time1)
@@ -99,15 +95,10 @@ class MaxMatchOnl(object):
             max_void_time = order_end_time[i] + void_time
             min_void_time = order_end_time[i]
 
-            fil_index = set(
-                np.where((order_start_time < max_void_time) & (order_start_time > min_void_time))[0].tolist()
-            ) & set(order_list)
+            fil_index = set(np.where((order_start_time < max_void_time) & (order_start_time > min_void_time))[0].tolist()) & set(order_list)
 
             for j in fil_index:
-                if (
-                    order_end_time[i] + pd.Timedelta(self.area[order_end_area[i], order_start_area[j]], unit="s")
-                    < order_start_time[j]
-                ):
+                if order_end_time[i] + pd.Timedelta(self.area[order_end_area[i], order_start_area[j]], unit="s") < order_start_time[j]:
                     trip_con_trip[i].append(j)
         # print("time_cal_trip_con_trip", time() - time1)
 
@@ -179,9 +170,7 @@ class MaxMatchOnl(object):
         return -flowCost, flowDict
 
     def findTripList(self, flowDict):
-        TripList = sorted(
-            [int(u[2:]) for u in flowDict for v in flowDict[u] if flowDict[u][v] > 0 and "to" in u and "td" in v]
-        )
+        TripList = sorted([int(u[2:]) for u in flowDict for v in flowDict[u] if flowDict[u][v] > 0 and "to" in u and "td" in v])
         return TripList
 
     def createDriver(self):
@@ -202,14 +191,17 @@ class MaxMatchOnl(object):
                     key = self.getKeys(MatchRoute[key[0]], 1)
 
                     if self.order[TripzID, 1] <= LockedEndTime:
+                        # update driver's time to trip's end time
                         self.driver[i, 1] = self.order[TripzID, 3]
+                        # update driver's area to trip's end area
                         self.driver[i, 0] = self.order[TripzID, 2]
 
-            # compute left time
-            if self.driver[i, 1] < RollEndTime:
-                self.driver[i, 1] = RollEndTime
-            else:
-                continue
+            # # update driver to the end of rolling interval
+            # Note: This may cause the driver to keep working after void time, as the time is updated to the end of the rolling interval
+            # if self.driver[i, 1] < RollEndTime:
+            #     self.driver[i, 1] = RollEndTime
+            # else:
+            #     continue
 
         return 0
 
@@ -281,12 +273,16 @@ class MaxMatchOnl(object):
             print("Total Order Num", len(trip_batch_i), file=f)
             print("Order matched", OneNum_match, file=f)
 
-            trip_in_locked_interval = np.where(
-                (self.order[:, 1] <= interval_locked) & (self.order[:, 1] > interval_start)
-            )[0].tolist()
+            trip_in_locked_interval = np.where((self.order[:, 1] <= interval_locked) & (self.order[:, 1] > interval_start))[0].tolist()
+
             exist_trip_in_locked_interval = list(set(trip_in_locked_interval) & set(all_trips_waiting))
             matched_trips_batch_i = list(set(self.findTripList(OneMatch)) & set(exist_trip_in_locked_interval))
             num_of_matched_trips = len(matched_trips_batch_i)
+
+            # print(num_of_matched_trips, "order matched in Batch")
+            # print("max trip number in locked interval", max(exist_trip_in_locked_interval))
+            # print("max trip number in matched trips", max(matched_trips_batch_i))
+            # print("max trip number in all trips", self.n_order)
 
             print("Order in Batch", len(exist_trip_in_locked_interval), file=f)
             print("Order matched in Batch", num_of_matched_trips, file=f)

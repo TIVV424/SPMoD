@@ -139,25 +139,26 @@ class MaxMatchOff(object):
         return TripList
 
     def createDriver(self):
-        FDriver = random.sample(range(0, self.n_driver), int(self.uncertainty * self.n_driver))
-        CFDriver = set(range(0, self.n_driver)) - set(FDriver)
-        return CFDriver, FDriver
+        # FDriver = random.sample(range(0, self.n_driver), int(self.uncertainty * self.n_driver))
+        CFDriver = set(range(0, self.n_driver))  # - set(FDriver)
+        return CFDriver  # , FDriver
 
     def twooffMatch(self):
-        CFDriver, FDriver = self.createDriver()
+        CFDriver = self.createDriver()
 
         VoidTime = pd.Timedelta(self.void, unit="m")
-        OneNum, OneMatch = self.offlineMatch(FDriver, self.order_list, VoidTime)
+        OneNum, OneMatch = self.offlineMatch(CFDriver, self.order_list, VoidTime)
 
-        VoidTime = pd.Timedelta(self.void, unit="m")
         UpdateTripList = list(set(self.order_list) - set(self.findTripList(OneMatch)))
-        # print(len(self.findTripList(OneMatch)))
+
         TwoNum, TwoMatch = self.offlineMatch(CFDriver, UpdateTripList, VoidTime)
+        # print(len(self.findTripList(OneMatch)))
+        # print(len(self.findTripList(TwoMatch)))
 
         if self.weight_on == "T":
             cnt = 0
-            for key in TwoMatch.keys():
-                path = TwoMatch[key]
+            for key in OneMatch.keys():
+                path = OneMatch[key]
                 if (len(path) == 1) & (sum(path.values()) == 1) & key.startswith("to"):
                     cnt += 1
 

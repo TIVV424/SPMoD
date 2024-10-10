@@ -17,10 +17,10 @@ import sys
 orig_stdout = sys.stdout
 
 
-driver = pd.read_csv("Database\NYC_trip\driver_260_2000.csv", index_col=0)
-order = pd.read_csv("Database\NYC_trip\order_clean_260.csv", index_col=0)
-area = np.load("Database\NYC_area\NY_area.npy")
-df_MTC = pd.read_csv("Database\network8_10\network_metrics_MTC.csv", index_col=0)
+driver = pd.read_csv("Database//NYC_trip//driver_260_2000.csv", index_col=0)
+order = pd.read_csv("Database//NYC_trip//order_clean_260.csv", index_col=0)
+area = np.load("Database//NYC_area//NY_area.npy")
+df_MTC = pd.read_csv("Database//network8_10//network_metrics_MTC.csv", index_col=0)
 df_MTC = df_MTC[df_MTC["time"] == "8-10am"]
 df_MTC.reset_index(drop=True, inplace=True)
 
@@ -29,10 +29,10 @@ seed = 0
 void = 30
 weight_on = "T"
 timestr = time.strftime("%Y%m%d-%H%M%S")
-if not os.path.exists(os.path.join("Database\online_result", timestr)):
-    os.makedirs(os.path.join("Database\online_result", timestr))
+if not os.path.exists(os.path.join("Database//online_result", timestr)):
+    os.makedirs(os.path.join("Database//online_result", timestr))
 
-f = open("Database\online_result\%s\log.txt" % (timestr), "w")
+f = open("Database//online_result//%s//log.txt" % (timestr), "w")
 sys.stdout = f
 
 order["call_time"] = pd.to_datetime(order["call_time"])
@@ -51,12 +51,12 @@ print(order_pick.shape)
 print("Number of orders between 8-10 am,", len(order_pick))
 
 
-driver_pick = pd.read_csv("Database\NYC_trip\driver_with_time.csv")
+driver_pick = pd.read_csv("Database//NYC_trip//driver_with_time.csv")
 driver_pick["time"] = pd.to_datetime(driver_pick["time"])
 print("Number of drivers between 8-10 am,", len(driver_pick))
 driver_pick = driver_pick.values
 
-para_df = pd.read_csv('experiments\para_log.csv')
+para_df = pd.read_csv('experiments//para_log_1line.csv')
 
 match_result = []
 time_spent = []
@@ -101,7 +101,7 @@ pd.DataFrame(
         "roll_int": para_df['roll'].tolist(),
         "locked_int": para_df['locked'].tolist(),
     }
-).to_csv("Database\online_result\%s\match_result_mpc.csv" % (timestr))
+).to_csv("Database//online_result//%s//match_result_mpc.csv" % (timestr))
 
 sys.stdout = orig_stdout
 f.close()
