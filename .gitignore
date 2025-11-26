@@ -85,7 +85,6 @@ dmypy.json
 
 # Output files
 *.pdf
-*.png
 *.jpg
 *.jpeg
 *.svg
