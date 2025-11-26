@@ -167,5 +167,5 @@ class MaxMatchOff(object):
             TotalNum = OneNum + TwoNum
             print(OneNum, TwoNum)
 
-        np.save("Database//offline_result//two_match_weight_%s.npy" % str(self.weight_on), TwoMatch)
+        np.save("Database//offline_result_0602//two_match_weight_%s.npy" % str(self.weight_on), TwoMatch)
         return TotalNum

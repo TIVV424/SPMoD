@@ -223,7 +223,7 @@ class MaxMatchOnl(object):
             str(self.weight_on),
         )
 
-        f = open("Database//online_result//%s//%s" % (self.dirname, filename_txt), "w")
+        f = open("Database//online_result_0602//%s//%s" % (self.dirname, filename_txt), "w")
 
         for i in pd.date_range(start=start_time, end=end_time, freq=str(self.roll_interval) + "min"):
             # print(np.max(self.driver[:,0]))
@@ -289,7 +289,7 @@ class MaxMatchOnl(object):
 
             IntervalNum = num_of_matched_trips
 
-            np.save("Database//online_result//%s//%s" % (self.dirname, filename_npy), OneMatch)
+            np.save("Database//online_result_0602//%s//%s" % (self.dirname, filename_npy), OneMatch)
 
             self.updateDriver(available_driver_batch_i, OneMatch, interval_locked, interval_roll)
             all_trips_waiting = self.updateOrder(all_trips_waiting, matched_trips_batch_i)
