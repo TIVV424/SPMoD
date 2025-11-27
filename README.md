@@ -109,7 +109,7 @@ Once this step is done, your processed data will appear in the Database/ directo
 
 **2. Generate SP Values**
 
-Inside the `SP/`` directory, 
+Inside the `SP/` directory, 
 1) run `SP/run_SP.py` that  construct shareability networks and compute SP value. 
 2) run `SP/SP_predict_fig_6.ipynb` trains the Support Vector Machine model to predict the SP values for June 2nd. 
 
