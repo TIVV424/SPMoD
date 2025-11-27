@@ -16,8 +16,9 @@ We introduce sink proximity, a network-science-inspired measure that captures ho
 1. [Contributions](#contributions)  
 2. [Why It Matters](#why-it-matters)  
 3. [How It Works](#how-it-works)  
-4. [Datasets](#datasets)  
-5. [License](#license)
+4. [Run the Code](#run-the-code)
+5. [Datasets](#datasets)  
+6. [License](#license)
 
 
 
