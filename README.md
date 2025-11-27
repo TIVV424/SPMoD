@@ -49,24 +49,24 @@ Disclaimer: This is a simplified overview of our approach. For full proofs, tech
 ![Alt text](fig1.png)
 
 - Step 2: We introduce the online version of the problem and show that it can be tackled using a receding-horizon control (RHC) strategy. Naturally, the limited look-ahead window constrains decision quality, making the resulting solution **inherently suboptimal**.
-<center>
+<p align="center">
   <img src="fig2.png" alt="Alt text" width="70%">
-</center>
+</p>
 
 - Step 3: We introduce ***Sink Proximity*** measure to capture the network evolving dynamics, such that we can address the suboptimality in the online RHC algorithm. 
     - In a shareability network, the sink proximity of an order is **defined as** the maximum number of orders that a driver can be matched with after serving this order. 
     - Finding the maximum number of orders a driver can take in a shareability network can be expressed as a single-source DAG longest path problem (which can be **effiently computed**).
 
-<center>
+<p align="center">
   <img src="fig3.png" alt="Alt text" width="70%">
-</center>
+</p>
 
 - Step 4: Finally, we demonstrate the proposed algorithm (RHC-SP) is efficient and effective, compared to the RHC algorithm. Only the key information is shown, for full analysis please refer to the paper. 
 
     - For the same parameter setting, RHC-SP (circle) constantly has higher Request Service Rate (RSR) comparing to RHC (cross).
-    <center>
-    <img src="fig4.png" alt="Alt text" width="70%">
-    </center>
+    <p align="center">
+      <img src="fig4.png" alt="Alt text" width="70%">
+    </p>
     - For the same parameter setting, RHC-SP almost always has higher rolling RSR comparing to RHC (ratio >1).
 ![Alt text](fig5.png)
 
