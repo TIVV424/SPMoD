@@ -1,0 +1,84 @@
+Optimization horizon:  080001  to  083001 . Result applied till:  081501
+Total Driver Num 2000
+Total Order Num 2794
+Order matched 2561
+Order in Batch 1372
+Order matched in Batch 1372
+Total matched order so far 1372
+Optimization horizon:  081001  to  084001 . Result applied till:  082501
+Total Driver Num 1845
+Total Order Num 2351
+Order matched 1944
+Order in Batch 936
+Order matched in Batch 767
+Total matched order so far 2139
+Optimization horizon:  082001  to  085001 . Result applied till:  083501
+Total Driver Num 1895
+Total Order Num 2488
+Order matched 1981
+Order in Batch 1016
+Order matched in Batch 721
+Total matched order so far 2860
+Optimization horizon:  083001  to  090001 . Result applied till:  084501
+Total Driver Num 1925
+Total Order Num 2593
+Order matched 2111
+Order in Batch 1077
+Order matched in Batch 793
+Total matched order so far 3653
+Optimization horizon:  084001  to  091001 . Result applied till:  085501
+Total Driver Num 1949
+Total Order Num 2588
+Order matched 2170
+Order in Batch 1116
+Order matched in Batch 856
+Total matched order so far 4509
+Optimization horizon:  085001  to  092001 . Result applied till:  090501
+Total Driver Num 1977
+Total Order Num 2545
+Order matched 2137
+Order in Batch 1077
+Order matched in Batch 856
+Total matched order so far 5365
+Optimization horizon:  090001  to  093001 . Result applied till:  091501
+Total Driver Num 1975
+Total Order Num 2549
+Order matched 2118
+Order in Batch 1050
+Order matched in Batch 821
+Total matched order so far 6186
+Optimization horizon:  091001  to  094001 . Result applied till:  092501
+Total Driver Num 1991
+Total Order Num 2565
+Order matched 2181
+Order in Batch 1068
+Order matched in Batch 811
+Total matched order so far 6997
+Optimization horizon:  092001  to  095001 . Result applied till:  093501
+Total Driver Num 1988
+Total Order Num 2645
+Order matched 2243
+Order in Batch 1086
+Order matched in Batch 860
+Total matched order so far 7857
+Optimization horizon:  093001  to  100001 . Result applied till:  094501
+Total Driver Num 1977
+Total Order Num 2683
+Order matched 2282
+Order in Batch 1094
+Order matched in Batch 871
+Total matched order so far 8728
+Optimization horizon:  094001  to  101001 . Result applied till:  095501
+Total Driver Num 1957
+Total Order Num 1672
+Order matched 1411
+Order in Batch 1135
+Order matched in Batch 912
+Total matched order so far 9640
+Optimization horizon:  095001  to  102001 . Result applied till:  100501
+Total Driver Num 1904
+Total Order Num 612
+Order matched 499
+Order in Batch 612
+Order matched in Batch 499
+Total matched order so far 10139

@@ -1,0 +1,28 @@
+Optimization horizon:  080001  to  090001 . Result applied till:  084001
+Total Driver Num 2000
+Total Order Num 5739
+Order matched 4998
+Order in Batch 3723
+Order matched in Batch 3251
+Total matched order so far 3251
+Optimization horizon:  083001  to  093001 . Result applied till:  091001
+Total Driver Num 1998
+Total Order Num 5190
+Order matched 4273
+Order in Batch 3175
+Order matched in Batch 2516
+Total matched order so far 5767
+Optimization horizon:  090001  to  100001 . Result applied till:  094001
+Total Driver Num 2000
+Total Order Num 5270
+Order matched 4415
+Order in Batch 3149
+Order matched in Batch 2541
+Total matched order so far 8308
+Optimization horizon:  093001  to  103001 . Result applied till:  101001
+Total Driver Num 1993
+Total Order Num 2269
+Order matched 1874
+Order in Batch 2269
+Order matched in Batch 1874
+Total matched order so far 10182
