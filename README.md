@@ -49,20 +49,95 @@ Disclaimer: This is a simplified overview of our approach. For full proofs, tech
 ![Alt text](fig1.png)
 
 - Step 2: We introduce the online version of the problem and show that it can be tackled using a receding-horizon control (RHC) strategy. Naturally, the limited look-ahead window constrains decision quality, making the resulting solution **inherently suboptimal**.
-![Alt text](fig2.png)
+<center>
+  <img src="fig2.png" alt="Alt text" width="70%">
+</center>
 
 - Step 3: We introduce ***Sink Proximity*** measure to capture the network evolving dynamics, such that we can address the suboptimality in the online RHC algorithm. 
     - In a shareability network, the sink proximity of an order is **defined as** the maximum number of orders that a driver can be matched with after serving this order. 
     - Finding the maximum number of orders a driver can take in a shareability network can be expressed as a single-source DAG longest path problem (which can be **effiently computed**).
-![Alt text](fig3.png)
+
+<center>
+  <img src="fig3.png" alt="Alt text" width="70%">
+</center>
 
 - Step 4: Finally, we demonstrate the proposed algorithm (RHC-SP) is efficient and effective, compared to the RHC algorithm. Only the key information is shown, for full analysis please refer to the paper. 
 
     - For the same parameter setting, RHC-SP (circle) constantly has higher Request Service Rate (RSR) comparing to RHC (cross).
-    ![Alt text](fig4.png)
+    <center>
+    <img src="fig4.png" alt="Alt text" width="70%">
+    </center>
     - For the same parameter setting, RHC-SP almost always has higher rolling RSR comparing to RHC (ratio >1).
 ![Alt text](fig5.png)
 
+
+## Run the Code
+
+This repository is organized to take you from raw NYC TLC trip data all the way to trained models, experimental results, and visualizations. Below is a roadmap for running the full pipeline.
+
+**1. Prepare the Data**
+    
+Start by downloading the raw datasets:
+
+- NYC Taxi Trip Records: https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page
+
+- NYC Taxi Zone Shapefiles (for area IDs): https://www.kaggle.com/datasets/mxruedag/tlc-nyc-taxi-zones
+
+Place the downloaded files in the appropriate folder:
+
+- `Database/NYC_trip/` for the raw NYC trip record data
+- `Database/NYC_area/` for the NYC taxi zone shapefiles
+
+Make sure these directories are populated before running any preprocessing scripts.
+
+
+Then run the scripts in:
+`data_preprocess/`
+
+These scripts:
+
+- extract time and area IDs for each trip
+
+- filter out trips that are unreasonably short or long
+
+- generate driver information
+
+- save the cleaned datasets as CSV files for downstream use
+
+Once this step is done, your processed data will appear in the Database/ directory.
+
+
+**2. Generate SP Values**
+
+Inside the `SP/`` directory, 
+1) run `SP/run_SP.py` that  construct shareability networks and compute SP value. 
+2) run `SP/SP_predict_fig_6.ipynb` trains the Support Vector Machine model to predict the SP values for June 2nd. 
+
+These predictions are later used by the RHC-SP algorithm (Appendix B)
+
+This step outputs the SP predictions into the `Database/prediction` folder.
+
+**3. Run Experiments**
+
+The `experiments/` directory contains all algorithmic evaluations, baselines, and ablation studies.
+Here, you can run Algorithm 1-3 in the manuscript, respectively:
+
+- Offline
+
+- RHC-SP
+
+- RHC 
+
+Due to space limitations, only part of the experimental results used in the paper’s visualizations are included.
+
+
+**4. Visualize the Results**
+
+Plots and figures are generated using the scripts in:
+`visualize/`. 
+
+
+These notebooks read the processed data and experiment logs from Database/ and produce Figure 4 and 5.
 
 
 
