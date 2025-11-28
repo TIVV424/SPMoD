@@ -63,12 +63,14 @@ Disclaimer: This is a simplified overview of our approach. For full proofs, tech
 
 - Step 4: Finally, we demonstrate the proposed algorithm (RHC-SP) is efficient and effective, compared to the RHC algorithm. Only the key information is shown, for full analysis please refer to the paper. 
 
-    - For the same parameter setting, RHC-SP (circle) constantly has higher Request Service Rate (RSR) comparing to RHC (cross).
+    - For the same parameter setting, RHC-SP constantly has higher Request Service Rate (RSR) comparing to RHC.
     <p align="center">
-      <img src="fig4.png" alt="Alt text" width="70%">
+      <img src="fig4.png" alt="Alt text" width="%">
     </p>
+
     - For the same parameter setting, RHC-SP almost always has higher rolling RSR comparing to RHC (ratio >1).
-![Alt text](fig5.png)
+  
+  ![Alt text](fig5.png)
 
 
 ## Run the Code
