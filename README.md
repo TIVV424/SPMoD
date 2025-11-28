@@ -21,7 +21,6 @@ We introduce sink proximity, a network-science-inspired measure that captures ho
 6. [License](#license)
 
 
-
 ## Contributions
 
 - **Novel Measure**:
